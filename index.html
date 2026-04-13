@@ -97,154 +97,102 @@ video {
   to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 </style>
-  <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Protected Website</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function () {
+    "use strict";
 
-    <!-- Disable Text Selection -->
-    <style>
-        body {
-            user-select: none;
-            -webkit-user-select: none;
-            -ms-user-select: none;
-            -moz-user-select: none;
-            background-color: #0b0b0b;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 15%;
+    // Disable Right Click
+    document.addEventListener("contextmenu", function (e) {
+        e.preventDefault();
+    });
+
+    // Disable Text Selection (except input and textarea)
+    document.addEventListener("selectstart", function (e) {
+        if (!["INPUT", "TEXTAREA"].includes(e.target.tagName)) {
+            e.preventDefault();
         }
-    </style>
+    });
 
-    <script>
-        // Disable Right Click
-        document.addEventListener("contextmenu", function (e) {
+    // Disable Dragging
+    document.addEventListener("dragstart", function (e) {
+        e.preventDefault();
+    });
+
+    // Disable Copy (except input and textarea)
+    document.addEventListener("copy", function (e) {
+        if (!["INPUT", "TEXTAREA"].includes(e.target.tagName)) {
             e.preventDefault();
-        });
-
-        // Disable Dragging
-        document.addEventListener("dragstart", function (e) {
-            e.preventDefault();
-        });
-
-        // Disable Text Selection
-        document.addEventListener("selectstart", function (e) {
-            e.preventDefault();
-        });
-
-        // Disable Copy
-        document.addEventListener("copy", function (e) {
-            e.preventDefault();
-        });
-
-        // Disable Keyboard Shortcuts
-        document.addEventListener("keydown", function (e) {
-            // Block F12
-            if (e.key === "F12") {
-                e.preventDefault();
-                return false;
-            }
-
-            // Block Ctrl+Shift+I, J, C
-            if (e.ctrlKey && e.shiftKey &&
-                (e.key === "I" || e.key === "i" ||
-                 e.key === "J" || e.key === "j" ||
-                 e.key === "C" || e.key === "c")) {
-                e.preventDefault();
-                return false;
-            }
-
-            // Block Ctrl+U (View Source)
-            if (e.ctrlKey && (e.key === "U" || e.key === "u")) {
-                e.preventDefault();
-                return false;
-            }
-
-            // Block Ctrl+S (Save)
-            if (e.ctrlKey && (e.key === "S" || e.key === "s")) {
-                e.preventDefault();
-                return false;
-            }
-
-            // Block Ctrl+A (Select All)
-            if (e.ctrlKey && (e.key === "A" || e.key === "a")) {
-                e.preventDefault();
-                return false;
-            }
-
-            // Block Ctrl+C (Copy)
-            if (e.ctrlKey && (e.key === "C" || e.key === "c")) {
-                e.preventDefault();
-                return false;
-            }
-
-            // Block Ctrl+P (Print)
-            if (e.ctrlKey && (e.key === "P" || e.key === "p")) {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        // Detect DevTools and Close Site
-        (function () {
-            const threshold = 160;
-
-            function closeSite() {
-                document.body.innerHTML = "<h1>Access Denied</h1><p>Developer Tools Detected.</p>";
-                window.open('', '_self');
-                window.close();
-                window.location.replace("about:blank");
-            }
-
-            function detectDevTools() {
-                const widthDiff = window.outerWidth - window.innerWidth;
-                const heightDiff = window.outerHeight - window.innerHeight;
-
-                if (widthDiff > threshold || heightDiff > threshold) {
-                    closeSite();
-                }
-            }
-
-            setInterval(detectDevTools, 500);
-        })();
-
-        // Detect DevTools via Debugger Trick
-        (function () {
-            function detectDebugger() {
-                const start = new Date().getTime();
-                debugger;
-                const end = new Date().getTime();
-                if (end - start > 100) {
-                    document.body.innerHTML = "<h1>Access Denied</h1>";
-                    window.location.replace("about:blank");
-                }
-            }
-            setInterval(detectDebugger, 1000);
-        })();
-
-        // Prevent Viewing Page in Frame
-        if (window.top !== window.self) {
-            window.top.location = window.self.location;
         }
+    });
 
-        // Disable Console
-        console.log = function () {};
-        console.warn = function () {};
-        console.error = function () {};
-        console.info = function () {};
-        console.debug = function () {};
-        console.clear();
-    </script>
-</head>
+    // Disable Cut (except input and textarea)
+    document.addEventListener("cut", function (e) {
+        if (!["INPUT", "TEXTAREA"].includes(e.target.tagName)) {
+            e.preventDefault();
+        }
+    });
 
-<body>
-    <h1>🔒 Protected Website</h1>
-    <p>This content is secured against inspection and copying.</p>
-</body>
-</html>
+    // Disable Keyboard Shortcuts
+    document.addEventListener("keydown", function (e) {
+        const key = e.key.toUpperCase();
+
+        if (
+            key === "F12" ||
+            (e.ctrlKey && e.shiftKey && ["I", "J", "C", "K"].includes(key)) ||
+            (e.ctrlKey && ["U", "S", "P", "A"].includes(key))
+        ) {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    // Detect DevTools via Window Size
+    function detectDevTools() {
+        const threshold = 160;
+        if (
+            window.outerWidth - window.innerWidth > threshold ||
+            window.outerHeight - window.innerHeight > threshold
+        ) {
+            blockAccess();
+        }
+    }
+
+    // Detect DevTools via Debugger
+    function detectDebugger() {
+        const start = new Date().getTime();
+        debugger;
+        const end = new Date().getTime();
+        if (end - start > 100) {
+            blockAccess();
+        }
+    }
+
+    // Block Access
+    function blockAccess() {
+        document.body.innerHTML = "";
+        document.body.style.backgroundColor = "#000";
+        window.location.replace("about:blank");
+    }
+
+    // Prevent Iframe Embedding
+    if (window.top !== window.self) {
+        window.top.location = window.self.location;
+    }
+
+    // Disable Console Output
+    console.log = function () {};
+    console.warn = function () {};
+    console.error = function () {};
+    console.info = function () {};
+    console.debug = function () {};
+    console.clear = function () {};
+
+    // Run Detection
+    setInterval(detectDevTools, 1000);
+    setInterval(detectDebugger, 1500);
+
+})();
+</script>
 </head>
 
 <body>
